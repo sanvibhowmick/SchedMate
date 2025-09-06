@@ -114,9 +114,10 @@ const Footer = ({ reduceMotion, setReduceMotion }) => {
           {/* Company Info Section */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-              <div style={logoStyle}></div>
+              
               <div>
                 <span style={{ fontSize: '1.5rem', fontWeight: '700', ...textWhite, display: 'block' }}>
+                  <img src="./src/assets/logo.png" alt="Logo" style={{ width: '3rem', height: '3rem', verticalAlign: 'middle', marginRight: '0.5rem' }} />
                   SchedMate
                 </span>
                 <span style={{ fontSize: '0.875rem', ...textMuted }}>
