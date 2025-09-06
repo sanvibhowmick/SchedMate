@@ -1,22 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import * as THREE from 'three';
 
 const FeaturesSection = () => {
   const [visibleCards, setVisibleCards] = useState([]);
   const [hoveredCard, setHoveredCard] = useState(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [reduceMotion, setReduceMotion] = useState(false);
   const sectionRef = useRef(null);
   const cardRefs = useRef([]);
-  
-  // Three.js refs for particle system
-  const particleContainerRef = useRef();
-  const sceneRef = useRef();
-  const rendererRef = useRef();
-  const dotsRef = useRef();
-  const animationRef = useRef();
-  const cameraRef = useRef();
-  const [isMounted, setIsMounted] = useState(false);
 
   const features = [
     {
@@ -86,219 +74,6 @@ const FeaturesSection = () => {
       iconBg: 'linear-gradient(135deg, #6366F1, #4F46E5)'
     }
   ];
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Mouse tracking and motion preference
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (sectionRef.current) {
-        const rect = sectionRef.current.getBoundingClientRect();
-        setMousePosition({ 
-          x: e.clientX - rect.left, 
-          y: e.clientY - rect.top 
-        });
-      }
-    };
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduceMotion(mediaQuery.matches);
-
-    const handleMotionChange = (e) => setReduceMotion(e.matches);
-    mediaQuery.addEventListener('change', handleMotionChange);
-
-    if (sectionRef.current) {
-      sectionRef.current.addEventListener('mousemove', handleMouseMove);
-    }
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleMotionChange);
-      if (sectionRef.current) {
-        sectionRef.current.removeEventListener('mousemove', handleMouseMove);
-      }
-    };
-  }, []);
-
-  // Initialize Three.js particle system
-  useEffect(() => {
-    if (!particleContainerRef.current || !isMounted || !sectionRef.current) return;
-
-    const sectionRect = sectionRef.current.getBoundingClientRect();
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, sectionRect.width / sectionRect.height, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-
-    renderer.setSize(sectionRect.width, sectionRect.height);
-    renderer.setClearColor(0x000000, 0);
-    particleContainerRef.current.appendChild(renderer.domElement);
-
-    sceneRef.current = scene;
-    rendererRef.current = renderer;
-    cameraRef.current = camera;
-
-    camera.position.z = 12;
-
-    // Create floating dots with reduced density for features section
-    const dotCount = 80;
-    const dotsGroup = new THREE.Group();
-    const dots = [];
-
-    const colors = [
-      0x22D3EE, // cyan-400
-      0x8B5CF6, // purple-500  
-      0x34D399, // emerald-400
-      0xF97316, // orange-500
-      0xEC4899, // pink-500
-      0x6366F1, // indigo-500
-    ];
-
-    for (let i = 0; i < dotCount; i++) {
-      const radius = 0.02 + Math.random() * 0.03;
-      const geometry = new THREE.SphereGeometry(radius, 10, 6);
-      
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      const material = new THREE.MeshBasicMaterial({
-        color: color,
-        transparent: true,
-        opacity: 0.3 + Math.random() * 0.3
-      });
-      
-      const dot = new THREE.Mesh(geometry, material);
-      
-      dot.position.set(
-        (Math.random() - 0.5) * 40,
-        (Math.random() - 0.5) * 30,
-        (Math.random() - 0.5) * 20
-      );
-      
-      dot.userData = {
-        velocity: new THREE.Vector3(
-          (Math.random() - 0.5) * 0.005,
-          (Math.random() - 0.5) * 0.005,
-          (Math.random() - 0.5) * 0.003
-        ),
-        originalPosition: dot.position.clone(),
-        floatOffset: Math.random() * Math.PI * 2,
-        floatSpeed: 0.2 + Math.random() * 0.3,
-        mouseInfluence: 0.3 + Math.random() * 0.5,
-        originalOpacity: material.opacity,
-        rotationSpeed: new THREE.Vector3(
-          (Math.random() - 0.5) * 0.008,
-          (Math.random() - 0.5) * 0.008,
-          (Math.random() - 0.5) * 0.008
-        )
-      };
-      
-      dots.push(dot);
-      dotsGroup.add(dot);
-    }
-
-    sceneRef.current.add(dotsGroup);
-    dotsRef.current = { group: dotsGroup, dots };
-
-    const handleResize = () => {
-      if (sectionRef.current) {
-        const rect = sectionRef.current.getBoundingClientRect();
-        camera.aspect = rect.width / rect.height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(rect.width, rect.height);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      if (particleContainerRef.current && renderer.domElement) {
-        particleContainerRef.current.removeChild(renderer.domElement);
-      }
-    };
-  }, [isMounted]);
-
-  // Particle animation loop
-  useEffect(() => {
-    if (!sceneRef.current || !rendererRef.current || !dotsRef.current || !sectionRef.current) return;
-
-    const animate = () => {
-      const time = Date.now() * 0.001;
-      const { dots } = dotsRef.current;
-      const sectionRect = sectionRef.current.getBoundingClientRect();
-
-      dots.forEach((dot) => {
-        if (!reduceMotion) {
-          const floatY = Math.sin(time * dot.userData.floatSpeed + dot.userData.floatOffset) * 0.2;
-          const floatX = Math.cos(time * dot.userData.floatSpeed * 0.6 + dot.userData.floatOffset) * 0.1;
-          
-          dot.position.y = dot.userData.originalPosition.y + floatY;
-          dot.position.x = dot.userData.originalPosition.x + floatX;
-
-          dot.userData.originalPosition.x += dot.userData.velocity.x;
-          dot.userData.originalPosition.z += dot.userData.velocity.z;
-
-          if (dot.userData.originalPosition.x > 20) dot.userData.originalPosition.x = -20;
-          if (dot.userData.originalPosition.x < -20) dot.userData.originalPosition.x = 20;
-          if (dot.userData.originalPosition.z > 10) dot.userData.originalPosition.z = -10;
-          if (dot.userData.originalPosition.z < -10) dot.userData.originalPosition.z = 10;
-
-          if (mousePosition && sectionRect.width > 0) {
-            const mouseWorld = new THREE.Vector3(
-              (mousePosition.x / sectionRect.width) * 2 - 1,
-              -(mousePosition.y / sectionRect.height) * 2 + 1,
-              0
-            );
-            mouseWorld.multiplyScalar(8);
-
-            const distance = dot.position.distanceTo(mouseWorld);
-            const interactionRadius = 4;
-            
-            if (distance < interactionRadius) {
-              const force = (interactionRadius - distance) / interactionRadius * 0.01 * dot.userData.mouseInfluence;
-              const direction = dot.position.clone().sub(mouseWorld).normalize();
-              
-              dot.position.add(direction.multiplyScalar(force));
-              
-              const brightnessFactor = (interactionRadius - distance) / interactionRadius;
-              dot.material.opacity = Math.min(0.8, dot.userData.originalOpacity + brightnessFactor * 0.3);
-              
-              const scale = 1 + brightnessFactor * 0.2;
-              dot.scale.setScalar(scale);
-            } else {
-              dot.material.opacity = THREE.MathUtils.lerp(dot.material.opacity, dot.userData.originalOpacity, 0.02);
-              const currentScale = dot.scale.x;
-              dot.scale.setScalar(THREE.MathUtils.lerp(currentScale, 1, 0.03));
-            }
-          }
-
-          dot.rotation.x += dot.userData.rotationSpeed.x;
-          dot.rotation.y += dot.userData.rotationSpeed.y;
-          dot.rotation.z += dot.userData.rotationSpeed.z;
-        } else {
-          dot.rotation.y += 0.001;
-        }
-      });
-
-      if (!reduceMotion) {
-        dotsRef.current.group.rotation.y += 0.0003;
-        dotsRef.current.group.rotation.x = Math.sin(time * 0.15) * 0.05;
-      }
-
-      rendererRef.current.render(sceneRef.current, cameraRef.current);
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [mousePosition, reduceMotion]);
 
   // Card intersection observer
   useEffect(() => {
@@ -507,8 +282,12 @@ const FeaturesSection = () => {
         `}
       </style>
       
-      <section ref={sectionRef} style={sectionStyle}>
-        
+      <section 
+        ref={sectionRef} 
+        style={sectionStyle}
+        id="features"
+        data-section="features"
+      >
         <div style={backgroundPattern} />
         
         <div style={containerStyle}>

@@ -391,7 +391,12 @@ const HowItWorksSection = () => {
         `}
       </style>
       
-      <section ref={sectionRef} style={sectionStyle}>
+      <section 
+        ref={sectionRef} 
+        style={sectionStyle}
+        id="how-it-works"
+        data-section="how-it-works"
+      >
         <div style={backgroundPattern} />
         
         <div style={containerStyle}>
