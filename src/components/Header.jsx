@@ -93,7 +93,7 @@ const Header = ({ isScrolled, onNavigate, onScrollTo, currentView }) => {
       <header style={headerStyle}>
         <div style={containerStyle}>
           <div style={logoStyle} onClick={() => onNavigate('home')}>
-            <img src="./src/assets/logo.png" alt="Logo" style={{ width: '3rem', height: '3rem', verticalAlign: 'middle', marginRight: '0.5rem' }} />
+            <img src="./src/assets/logo.png" alt="Logo" style={{ width: '4rem', height: '3rem', verticalAlign: 'middle', marginRight: '0.5rem' }} />
             SchedMate
           </div>
 

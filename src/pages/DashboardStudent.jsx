@@ -205,7 +205,9 @@ const TimetableDashboard = () => {
       <div style={sidebarStyle}>
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', background: 'linear-gradient(135deg, #22D3EE, #8B5CF6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <img src="./src/assets/logo.png" alt="Logo" style={{ width: '4rem', height: '3rem', verticalAlign: 'middle', marginRight: '0.5rem' }} />
             SchedMate
+            
           </h2>
         </div>
 
