@@ -117,7 +117,7 @@ const Footer = ({ reduceMotion, setReduceMotion }) => {
               <div style={logoStyle}></div>
               <div>
                 <span style={{ fontSize: '1.5rem', fontWeight: '700', ...textWhite, display: 'block' }}>
-                  EduManage
+                  SchedMate
                 </span>
                 <span style={{ fontSize: '0.875rem', ...textMuted }}>
                   Educational Solutions

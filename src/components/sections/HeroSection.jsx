@@ -1,14 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import * as THREE from 'three';
 import TypewriterEffect from '../ui/TypewriterEffect';
-import unnamedImage from "../../assets/unnamed.png";
+import unnamed_pic from '../../assets/unnamed.png';
 
-const HeroSection = () => {
+const HeroSection = ({ onNavigate }) => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [reduceMotion, setReduceMotion] = useState(false);
+  
+  // Three.js refs
+  const containerRef = useRef();
+  const sceneRef = useRef();
+  const rendererRef = useRef();
+  const dotsRef = useRef();
+  const animationRef = useRef();
+  const cameraRef = useRef();
+  const [isMounted, setIsMounted] = useState(false);
+
   const typewriterTexts = [
     'Conflict-Free Scheduling',
     'Faculty-Friendly Optimization', 
     'AI-Powered Timetables',
     'Multi-Department Support'
   ];
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const sectionStyle = {
     position: 'relative',
@@ -18,6 +35,7 @@ const HeroSection = () => {
     justifyContent: 'center',
     padding: '0 2rem',
     overflow: 'hidden',
+    background: 'radial-gradient(ellipse at center, rgba(6, 182, 212, 0.15) 0%, rgba(139, 92, 246, 0.1) 35%, rgba(0, 0, 0, 0.8) 70%)',
   };
 
   const containerStyle = {
@@ -29,6 +47,8 @@ const HeroSection = () => {
     alignItems: 'center',
     gap: '4rem',
     margin: '0 auto',
+    position: 'relative',
+    zIndex: 10,
   };
 
   const contentStyle = {
@@ -45,6 +65,7 @@ const HeroSection = () => {
     lineHeight: '1.1',
     color: '#FFFFFF',
     marginBottom: '1.5rem',
+    textShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
   };
 
   const subtitleStyle = {
@@ -53,6 +74,7 @@ const HeroSection = () => {
     lineHeight: '1.6',
     marginBottom: '2rem',
     maxWidth: '90%',
+    textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
   };
 
   const buttonGroupStyle = {
@@ -85,7 +107,7 @@ const HeroSection = () => {
 
   const secondaryButtonStyle = {
     ...buttonStyle,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     border: '2px solid rgba(255, 255, 255, 0.2)',
     backdropFilter: 'blur(10px)',
   };
@@ -101,11 +123,19 @@ const HeroSection = () => {
   const imageStyle = {
     width: '100%',
     maxWidth: '32rem',
-    height: 'auto',
+    height: '24rem',
     borderRadius: '1.5rem',
-    filter: 'drop-shadow(0 25px 50px rgba(6, 182, 212, 0.25))',
+    background: 'rgba(0, 0, 0, 0.4)',
+    backdropFilter: 'blur(20px)',
     border: '1px solid rgba(6, 182, 212, 0.3)',
-    background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.1))',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '1.2rem',
+    fontWeight: '600',
+    color: '#22D3EE',
+    cursor: 'pointer',
     transition: 'all 400ms ease-out',
     transform: 'perspective(1000px) rotateY(-2deg) rotateX(1deg)',
     boxShadow: `
@@ -155,8 +185,50 @@ const HeroSection = () => {
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
+  // Dashboard Preview Component
+const DashboardPreview = ({ isMobile, onNavigate }) => (
+  <div
+    style={isMobile ? mobileImageContainerStyle : imageContainerStyle}
+    onClick={() => onNavigate('dashboard')}
+  >
+    <img
+      src={unnamed_pic}
+      alt="AI-Powered Timetable Management Dashboard"
+      style={isMobile ? mobileImageStyle : imageStyle}
+      onMouseEnter={(e) => {
+        if (!isMobile) {
+          Object.assign(e.target.style, imageHoverStyle);
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isMobile) {
+          Object.assign(e.target.style, imageStyle);
+        }
+      }}
+      loading="eager"
+    />
+  </div>
+);
+
   return (
     <section id="hero" style={sectionStyle}>
+      {/* Particle System Background */}
+      {isMounted && (
+        <div 
+          ref={containerRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 1,
+            pointerEvents: 'none'
+          }}
+        />
+      )}
+      
+      {/* Content Overlay */}
       <div style={isMobile ? mobileContainerStyle : containerStyle}>
         <div style={isMobile ? mobileContentStyle : contentStyle}>
           <h1 style={titleStyle}>
@@ -175,6 +247,7 @@ const HeroSection = () => {
           <div style={buttonGroupStyle}>
             <button 
               style={primaryButtonStyle}
+              onClick={() => onNavigate('dashboard')}
               onMouseEnter={(e) => {
                 e.target.style.transform = 'translateY(-2px)';
                 e.target.style.boxShadow = '0 12px 40px rgba(34, 211, 238, 0.4)';
@@ -188,37 +261,23 @@ const HeroSection = () => {
             </button>
             <button 
               style={secondaryButtonStyle}
+              onClick={() => onNavigate('features')}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
                 e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
+                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
                 e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)';
               }}
             >
-              View Demo
+              Learn More
             </button>
           </div>
         </div>
         
         <div style={isMobile ? mobileImageContainerStyle : imageContainerStyle}>
-          <img
-            src={unnamedImage}
-            alt="AI-Powered Timetable Management Dashboard"
-            style={isMobile ? mobileImageStyle : imageStyle}
-            onMouseEnter={(e) => {
-              if (!isMobile) {
-                Object.assign(e.target.style, imageHoverStyle);
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isMobile) {
-                Object.assign(e.target.style, imageStyle);
-              }
-            }}
-            loading="eager"
-          />
+          <DashboardPreview />
         </div>
       </div>
     </section>
